@@ -117,6 +117,7 @@ func (r PodmanClusterReconciler) reconcileDelete(ctx context.Context, byoCluster
 	return ctrl.Result{}, nil
 }
 
+// TODO: no CONTROL_PLANE_ENDPOINT set yet
 func (r PodmanClusterReconciler) reconcileNormal(ctx context.Context, podmanCluster *infrastructurev1.PodmanCluster) (reconcile.Result, error) {
 	// If the ByoCluster doesn't have our finalizer, add it.
 	controllerutil.AddFinalizer(podmanCluster, infrastructurev1.ClusterFinalizer)

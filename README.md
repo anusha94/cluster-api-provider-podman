@@ -27,3 +27,6 @@ Now that our scaffolded code is ready, we will write the provider logic. CAPI de
 
 ## Implementing the PodmanCluster
 We will follow the flow diagram mentioned in the Cluster API book for [implementing the Cluster Infrastructure](https://cluster-api.sigs.k8s.io/developer/providers/cluster-infrastructure.html#behavior)
+
+## Implementing the PodmanMachine
+We will follow the flow diagram mentioned in the Cluster API book for [implementing the Machine Infrastructure](https://cluster-api.sigs.k8s.io/developer/providers/machine-infrastructure.html#behavior)

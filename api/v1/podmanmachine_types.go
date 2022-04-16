@@ -23,6 +23,13 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+const (
+	// MachineFinalizer allows ReconcilePodmanMachine to clean up Byo
+	// resources associated with PodmanMachine before removing it from the
+	// API Server.
+	MachineFinalizer = "podmanmachine.infrastructure.cluster.x-k8s.io"
+)
+
 // PodmanMachineSpec defines the desired state of PodmanMachine
 type PodmanMachineSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
