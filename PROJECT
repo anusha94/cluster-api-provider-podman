@@ -1,0 +1,34 @@
+domain: cluster.x-k8s.io
+layout:
+- go.kubebuilder.io/v3
+projectName: cluster-api-provider-podman
+repo: cluster.x-k8s.io/podman
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: cluster.x-k8s.io
+  group: infrastructure
+  kind: PodmanCluster
+  path: cluster.x-k8s.io/podman/api/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: cluster.x-k8s.io
+  group: infrastructure
+  kind: PodmanMachine
+  path: cluster.x-k8s.io/podman/api/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: cluster.x-k8s.io
+  group: infrastructure
+  kind: PodmanMachineTemplate
+  path: cluster.x-k8s.io/podman/api/v1
+  version: v1
+version: "3"
