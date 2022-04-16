@@ -20,11 +20,18 @@ import (
 	"context"
 
 	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/cluster-api/util"
+	"sigs.k8s.io/cluster-api/util/conditions"
+	"sigs.k8s.io/cluster-api/util/patch"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	infrastructurev1 "github.com/anusha94/cluster-api-provider-podman/api/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 )
 
 // PodmanClusterReconciler reconciles a PodmanCluster object
@@ -46,12 +53,94 @@ type PodmanClusterReconciler struct {
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.11.0/pkg/reconcile
-func (r *PodmanClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *PodmanClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (_ ctrl.Result, rerr error) {
+	log := ctrl.LoggerFrom(ctx)
+
+	// Fetch the PodmanCluster instance
+	podmanCluster := &infrastructurev1.PodmanCluster{}
+	if err := r.Client.Get(ctx, req.NamespacedName, podmanCluster); err != nil {
+		if apierrors.IsNotFound(err) {
+			return ctrl.Result{}, nil
+		}
+		return ctrl.Result{}, err
+	}
+
+	// Fetch the Cluster
+	cluster, err := util.GetOwnerCluster(ctx, r.Client, podmanCluster.ObjectMeta)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+	if cluster == nil {
+		log.Info("Waiting for Cluster Controller to set OwnerRef on PodmanCluster")
+		return ctrl.Result{}, nil
+	}
+
+	log = log.WithValues("cluster", cluster.Name)
+
+	// Initialize the patch helper
+	patchHelper, err := patch.NewHelper(podmanCluster, r.Client)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	// Always attempt to Patch the PodmanCluster object and status after each reconciliation.
+	defer func() {
+		if err := patchPodmanCluster(ctx, patchHelper, podmanCluster); err != nil {
+			log.Error(err, "failed to patch PodmanCluster")
+			if rerr == nil {
+				rerr = err
+			}
+		}
+	}()
+
+	// Add finalizer first if not exist to avoid the race condition between init and delete
+	if !controllerutil.ContainsFinalizer(podmanCluster, infrastructurev1.ClusterFinalizer) {
+		controllerutil.AddFinalizer(podmanCluster, infrastructurev1.ClusterFinalizer)
+		return ctrl.Result{}, nil
+	}
+
+	// Handle deleted clusters
+	if !podmanCluster.DeletionTimestamp.IsZero() {
+		return r.reconcileDelete(ctx, podmanCluster)
+	}
+
+	// Handle non-deleted clusters
+	return r.reconcileNormal(ctx, podmanCluster)
+}
+
+func (r PodmanClusterReconciler) reconcileDelete(ctx context.Context, byoCluster *infrastructurev1.PodmanCluster) (reconcile.Result, error) {
 	_ = log.FromContext(ctx)
 
-	// TODO(user): your logic here
+	// Cluster is deleted so remove the finalizer.
+	controllerutil.RemoveFinalizer(byoCluster, infrastructurev1.ClusterFinalizer)
 
 	return ctrl.Result{}, nil
+}
+
+func (r PodmanClusterReconciler) reconcileNormal(ctx context.Context, podmanCluster *infrastructurev1.PodmanCluster) (reconcile.Result, error) {
+	// If the ByoCluster doesn't have our finalizer, add it.
+	controllerutil.AddFinalizer(byoCluster, infrastructurev1.ClusterFinalizer)
+
+	podmanCluster.Status.Ready = true
+
+	return reconcile.Result{}, nil
+}
+
+func patchPodmanCluster(ctx context.Context, patchHelper *patch.Helper, byoCluster *infrastructurev1.PodmanCluster) error {
+	// Always update the readyCondition by summarizing the state of other conditions.
+	// A step counter is added to represent progress during the provisioning process (instead we are hiding it during the deletion process).
+	conditions.SetSummary(byoCluster,
+		conditions.WithStepCounterIf(byoCluster.ObjectMeta.DeletionTimestamp.IsZero()),
+	)
+
+	// Patch the object, ignoring conflicts on the conditions owned by this controller.
+	return patchHelper.Patch(
+		ctx,
+		byoCluster,
+		patch.WithOwnedConditions{Conditions: []clusterv1.ConditionType{
+			clusterv1.ReadyCondition,
+		}},
+	)
 }
 
 // SetupWithManager sets up the controller with the Manager.

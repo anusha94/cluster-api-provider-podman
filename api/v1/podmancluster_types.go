@@ -23,6 +23,12 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+const (
+	// ClusterFinalizer allows PodmanClusterReconciler to clean up resources associated with PodmanCluster before
+	// removing it from the apiserver.
+	ClusterFinalizer = "podmancluster.infrastructure.cluster.x-k8s.io"
+)
+
 // PodmanClusterSpec defines the desired state of PodmanCluster
 type PodmanClusterSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
@@ -36,6 +42,8 @@ type PodmanClusterSpec struct {
 type PodmanClusterStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	// +optional
+	Ready bool `json:"ready,omitempty"`
 }
 
 //+kubebuilder:object:root=true
