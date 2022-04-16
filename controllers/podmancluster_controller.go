@@ -119,24 +119,24 @@ func (r PodmanClusterReconciler) reconcileDelete(ctx context.Context, byoCluster
 
 func (r PodmanClusterReconciler) reconcileNormal(ctx context.Context, podmanCluster *infrastructurev1.PodmanCluster) (reconcile.Result, error) {
 	// If the ByoCluster doesn't have our finalizer, add it.
-	controllerutil.AddFinalizer(byoCluster, infrastructurev1.ClusterFinalizer)
+	controllerutil.AddFinalizer(podmanCluster, infrastructurev1.ClusterFinalizer)
 
 	podmanCluster.Status.Ready = true
 
 	return reconcile.Result{}, nil
 }
 
-func patchPodmanCluster(ctx context.Context, patchHelper *patch.Helper, byoCluster *infrastructurev1.PodmanCluster) error {
+func patchPodmanCluster(ctx context.Context, patchHelper *patch.Helper, podmanCluster *infrastructurev1.PodmanCluster) error {
 	// Always update the readyCondition by summarizing the state of other conditions.
 	// A step counter is added to represent progress during the provisioning process (instead we are hiding it during the deletion process).
-	conditions.SetSummary(byoCluster,
-		conditions.WithStepCounterIf(byoCluster.ObjectMeta.DeletionTimestamp.IsZero()),
+	conditions.SetSummary(podmanCluster,
+		conditions.WithStepCounterIf(podmanCluster.ObjectMeta.DeletionTimestamp.IsZero()),
 	)
 
 	// Patch the object, ignoring conflicts on the conditions owned by this controller.
 	return patchHelper.Patch(
 		ctx,
-		byoCluster,
+		podmanCluster,
 		patch.WithOwnedConditions{Conditions: []clusterv1.ConditionType{
 			clusterv1.ReadyCondition,
 		}},

@@ -18,6 +18,7 @@ package v1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -44,6 +45,10 @@ type PodmanClusterStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 	// +optional
 	Ready bool `json:"ready,omitempty"`
+
+	// Conditions defines current service state of the ByoCluster.
+	// +optional
+	Conditions clusterv1.Conditions `json:"conditions,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -69,4 +74,14 @@ type PodmanClusterList struct {
 
 func init() {
 	SchemeBuilder.Register(&PodmanCluster{}, &PodmanClusterList{})
+}
+
+// GetConditions gets the condition for the ByoCluster status
+func (podCluster *PodmanCluster) GetConditions() clusterv1.Conditions {
+	return podCluster.Status.Conditions
+}
+
+// SetConditions sets the conditions for the ByoCluster status
+func (podCluster *PodmanCluster) SetConditions(conditions clusterv1.Conditions) {
+	podCluster.Status.Conditions = conditions
 }
