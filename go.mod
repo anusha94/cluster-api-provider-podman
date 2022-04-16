@@ -1,4 +1,4 @@
-module cluster.x-k8s.io/podman
+module github.com/anusha94/cluster-api-provider-podman
 
 go 1.17
 

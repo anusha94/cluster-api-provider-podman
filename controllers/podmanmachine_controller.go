@@ -24,7 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	infrastructurev1 "cluster.x-k8s.io/podman/api/v1"
+	infrastructurev1 "github.com/anusha94/cluster-api-provider-podman/api/v1"
 )
 
 // PodmanMachineReconciler reconciles a PodmanMachine object

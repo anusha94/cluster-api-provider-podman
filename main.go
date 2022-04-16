@@ -31,8 +31,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	infrastructurev1 "cluster.x-k8s.io/podman/api/v1"
-	"cluster.x-k8s.io/podman/controllers"
+	infrastructurev1 "github.com/anusha94/cluster-api-provider-podman/api/v1"
+	"github.com/anusha94/cluster-api-provider-podman/controllers"
 	//+kubebuilder:scaffold:imports
 )
 

@@ -30,7 +30,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	infrastructurev1 "cluster.x-k8s.io/podman/api/v1"
+	infrastructurev1 "github.com/anusha94/cluster-api-provider-podman/api/v1"
 	//+kubebuilder:scaffold:imports
 )
 

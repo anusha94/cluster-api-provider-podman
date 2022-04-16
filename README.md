@@ -14,8 +14,9 @@ kubebuilder create api --group infrastructure --version v1 --kind PodmanMachine
 kubebuilder create api --group infrastructure --version v1 --kind PodmanCluster
 ```
 
-# generate manifests
+# generate manifests and implementation of runtime.Object 
 Any change to the APIs, we have to generate the manifests
 ```shell
 make manifests
+make generate
 ```
